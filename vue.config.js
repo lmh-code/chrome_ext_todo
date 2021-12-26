@@ -27,12 +27,12 @@ const plugins = [
 // 页面文件
 const pages = {}
 // 配置 popup.html 页面
-const chromeName = ['popup']
+const chromeName = ['popup', 'setting', 'todo']
 
 chromeName.forEach(name => {
   pages[name] = {
-    entry: `src/${name}/main.js`,
-    template: `src/${name}/index.html`,
+    entry: `src/pages/${name}/main.js`,
+    template: `src/pages/${name}/index.html`,
     filename: `${name}.html`
   }
 })
@@ -60,8 +60,8 @@ module.exports = {
   // 增加chainWebpack配置
   chainWebpack: config => {
     if (process.env.NODE_ENV === 'production') {
-      config.output.filename('js/[name].js').end()
-      config.output.chunkFilename('js/[name].js').end()
+      config.output.filename(`js/[name].${Date.now()}.js`).end()
+      config.output.chunkFilename(`js/[name].${Date.now()}.js`).end()
     }
 
     config.module

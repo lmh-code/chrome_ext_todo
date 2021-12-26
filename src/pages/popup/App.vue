@@ -1,19 +1,15 @@
 <template>
-  <div id="app">
-    <ThePopup />
+  <div>
+    <the-popup />
   </div>
 </template>
 
 <script>
 import ThePopup from './components/ThePopup.vue'
 export default {
-  name: 'App',
+  name: 'Popup',
   components: {
     ThePopup
   }
 }
 </script>
-
-<style scoped lang="scss">
-
-</style>

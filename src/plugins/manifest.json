@@ -9,6 +9,7 @@
     "default_popup": "popup.html"
   },
   "permissions": [
+    "tabs",
     "https://secure.flickr.com/"
   ],
   "icons": {
