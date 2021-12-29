@@ -14,6 +14,10 @@ const copyFiles = [
   {
     from: path.resolve('src/plugins/inject.js'),
     to: path.resolve('dist/js')
+  },
+  {
+    from: path.resolve('src/background/main.js'),
+    to: path.resolve('dist/js/background.js')
   }
 ]
 
@@ -43,12 +47,12 @@ module.exports = {
   productionSourceMap: false,
   // 配置 content.js background.js
   configureWebpack: {
-    entry: {
-      background: './src/background/main.js'
-    },
-    output: {
-      filename: 'js/[name].js'
-    },
+    // entry: {
+    //   background: './src/background/main.js'
+    // },
+    // output: {
+    //   filename: 'js/[name].js'
+    // },
     plugins
   },
   // 配置 content.css

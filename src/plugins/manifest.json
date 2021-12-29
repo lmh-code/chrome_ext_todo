@@ -10,6 +10,7 @@
   },
   "permissions": [
     "tabs",
+    "contextMenus",
     "https://secure.flickr.com/"
   ],
   "icons": {
