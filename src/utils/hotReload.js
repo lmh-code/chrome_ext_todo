@@ -1,6 +1,6 @@
 // 加载文件
-const filesInDirectory = dir =>
-  new Promise(resolve =>
+const filesInDirectory = (dir) => {
+  return new Promise(resolve =>
     dir.createReader().readEntries(entries => {
       Promise.all(
         entries
@@ -13,12 +13,14 @@ const filesInDirectory = dir =>
         .then(resolve)
     })
   )
+}
 
 // 遍历插件目录，读取文件信息，组合文件名称和修改时间成数据
-const timestampForFilesInDirectory = dir =>
-  filesInDirectory(dir).then(files =>
+const timestampForFilesInDirectory = (dir) => {
+  return filesInDirectory(dir).then(files =>
     files.map(f => f.name + f.lastModifiedDate).join()
   )
+}
 
 // 刷新当前活动页
 const reload = () => {
@@ -59,4 +61,6 @@ const hotReload = () => {
   })
 }
 
-export default hotReload
+export {
+  hotReload
+}

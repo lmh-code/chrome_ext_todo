@@ -16,6 +16,10 @@ const copyFiles = [
     to: path.resolve('dist/js')
   },
   {
+    from: path.resolve('src/utils'),
+    to: path.resolve('dist/utils')
+  },
+  {
     from: path.resolve('src/background/main.js'),
     to: path.resolve('dist/js/background.js')
   }
