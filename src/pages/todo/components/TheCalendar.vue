@@ -1,37 +1,27 @@
 <template>
   <div>
     <div class="flex header-wrap">
-      <div class="header-wrap__date">
-        <span
-          class="pre-btn"
-          @click="changeMonth(-1)"
-        >
-          <svg-icon
-            icon-class="pre_month"
-            class-name="options-icon"
-          />
-        </span>
-        <span> {{ checkedYear }}</span>年<span>{{ checkedMonth }}</span>月
-        <span
-          class="next-btn"
-          @click="changeMonth(1)"
-        >
-          <svg-icon
-            icon-class="next_month"
-            class-name="options-icon"
-          />
-        </span>
-      </div>
-
-      <div class="header-wrap__btn">
-        <span class="search_btn">
-          <svg-icon
-            icon-class="search"
-            class-name="options-icon"
-          />
-        </span>
-      </div>
+      <span
+        class="pre-btn"
+        @click="changeMonth(-1)"
+      >
+        <svg-icon
+          icon-class="pre_month"
+          class-name="options-icon"
+        />
+      </span>
+      <span> {{ checkedYear }}</span>年<span>{{ checkedMonth }}</span>月
+      <span
+        class="next-btn"
+        @click="changeMonth(1)"
+      >
+        <svg-icon
+          icon-class="next_month"
+          class-name="options-icon"
+        />
+      </span>
     </div>
+
     <div class="flex week-list">
       <div
         v-for="(item, index) of weekList"
@@ -41,6 +31,7 @@
         {{ item }}
       </div>
     </div>
+
     <div
       v-for="(colItems, index) of monthDays"
       :key="index"
@@ -356,26 +347,20 @@ export default {
   .header-wrap {
     width: 100%;
     height: 48px;
+    font-size: 28px;
     padding: 0 6%;
     box-sizing: border-box;
-    .header-wrap__date {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      font-size: 28px;
-      font-weight: 500;
-      .pre-btn,
-      .next-btn {
-        font-size: 22px;
-        cursor: pointer;
-      }
-      .pre-btn {
-        margin-right: 4px;
-      }
-    }
-    .search_btn {
-      font-size: 22px;
+    justify-content: center;
+    .pre-btn,
+    .next-btn {
+      font-size: 20px;
       cursor: pointer;
+    }
+    .pre-btn {
+      margin-right: 10px;
+    }
+    .next-btn {
+      margin-left: 6px;
     }
   }
 

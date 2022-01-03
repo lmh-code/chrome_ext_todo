@@ -1,18 +1,22 @@
 <template>
   <div class="todo-wrap">
     <the-calendar
+      ref="theCalendarRef"
       :collapse="true"
       :special-days="hasScheduleDays"
       @day-change="dayChangeHandle"
       @month-change="monthChangeHandle"
     />
+
     <div class="todo-list-wrap">
       <div class="todo-list">
-        <div style="padding-bottom: 18px;">{{ curYear }}年{{ curMonth }}月{{ curDay }}日&nbsp;&nbsp;{{ curLunarDay }}</div>
-
+        <div class="todo-list__header">
+          {{ curYear }}年{{ curMonth }}月{{ curDay }}日&nbsp;&nbsp;{{ curLunarDay }}
+        </div>
         <div
           v-if="today !== curDay"
           class="btn-wrap today"
+          @click="goCurrentDay"
         >
           <span class="today-txt">{{ today }}</span>
           <svg-icon
@@ -29,6 +33,7 @@
             class-name="add-icon"
           />
         </div>
+
         <div
           v-if="todoList.length > 0"
           style="padding-right: 70px;"
@@ -135,6 +140,18 @@ export default {
     }
   },
   methods: {
+    /**
+     * @description: 选中当前日期
+     */
+    goCurrentDay() {
+      this.$nextTick(() => {
+        this.$refs.theCalendarRef.checkedDayChange({
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() + 1,
+          day: new Date().getDate()
+        }, true)
+      })
+    },
     formatTime(timeStamp) {
       return parseTime(timeStamp) || ''
     },
@@ -168,6 +185,9 @@ export default {
       // 日期发生变化获取todoList数据
       this.getTodoListByKey(`${this.curYear}-${this.curMonth}-${this.curDay}`)
     },
+    /**
+     * @description: 通过制定的key获取当前日的日程
+     */
     async getTodoListByKey(todoKey) {
       const result = await IndexDB.selectByIndex(CHROME_EXT_TODO, 'todo_key', todoKey)
 
@@ -201,7 +221,7 @@ export default {
       })
     },
     /**
-     * @description: 新增数据
+     * @description: 新增 | 编辑数据
      */
     doConfirmHandle(item) {
       if (item.id) {
@@ -296,10 +316,14 @@ export default {
         height: 100%;
         background-color: $-color-white;
         border-radius: 18px;
-        padding: 3%;
+        padding: 18px 3%;
         box-sizing: border-box;
         position: relative;
         overflow-y: auto;
+        .todo-list__header {
+          padding-bottom: 18px;
+          border-bottom: 1px solid $-color-sub-grey;
+        }
         .btn-wrap {
           width: 50px;
           height: 50px;
@@ -344,7 +368,10 @@ export default {
       .todo-list__item {
         display: flex;
         align-items: center;
-        border-top: 1px solid #ececec;
+        border-top: 1px solid $-color-sub-grey;
+        &:first-child {
+          border-top-width: 0;
+        }
         .complete-status {
           width: 50px;
           min-height: 50px;
