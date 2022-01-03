@@ -1,5 +1,5 @@
 <template>
-  <div class="todo-wrap">
+  <div class="flex todo-wrap">
     <the-calendar
       ref="theCalendarRef"
       :collapse="true"
@@ -8,97 +8,50 @@
       @month-change="monthChangeHandle"
     />
 
-    <div class="todo-list-wrap">
+    <div class="flex todo-list-wrap">
+      <div
+        v-if="today !== curDay"
+        class="btn-wrap today"
+        @click="goCurrentDay"
+      >
+        <span class="today-txt">{{ today }}</span>
+        <svg-icon
+          icon-class="rilikuang"
+          class-name="rilikuang-icon"
+        />
+      </div>
+      <div
+        class="btn-wrap add"
+        @click="addHandle"
+      >
+        <svg-icon
+          icon-class="add"
+          class-name="add-icon"
+        />
+      </div>
       <div class="todo-list">
-        <div class="todo-list__header">
-          {{ curYear }}年{{ curMonth }}月{{ curDay }}日&nbsp;&nbsp;{{ curLunarDay }}
-        </div>
-        <div
-          v-if="today !== curDay"
-          class="btn-wrap today"
-          @click="goCurrentDay"
-        >
-          <span class="today-txt">{{ today }}</span>
-          <svg-icon
-            icon-class="rilikuang"
-            class-name="rilikuang-icon"
-          />
-        </div>
-        <div
-          class="btn-wrap add"
-          @click="addHandle"
-        >
-          <svg-icon
-            icon-class="add"
-            class-name="add-icon"
-          />
-        </div>
-
-        <div
-          v-if="todoList.length > 0"
-          style="padding-right: 70px;"
-        >
-          <div
-            v-for="(item, index) of todoList"
-            :key="index"
-            class="todo-list__item"
-          >
-            <div
-              class="complete-status"
-              @click="changeCompleteStatus(item)"
-            >
+        <div class="flex todo-list__header">
+          <div class="header-title">
+            {{ curYear }}年{{ curMonth }}月{{ curDay }}日&nbsp;&nbsp;{{ curLunarDay }}
+          </div>
+          <div class="header-right">
+            <span class="btn search">
               <svg-icon
-                v-if="item.complete"
-                icon-class="complete"
-                class-name="complete-icon"
+                icon-class="search"
+                class-name="options-icon"
               />
-              <svg-icon
-                v-else
-                icon-class="doing"
-                class-name="doing-icon"
-              />
-            </div>
-            <div
-              class="item-content"
-              :class="item.complete ? 'complete' : 'normal'"
-            >
-              <div class="input-wrap">
-                <input
-                  v-if="item.edit"
-                  ref="inputRef"
-                  v-model="item.todo_info"
-                  type="text"
-                  class="input-text"
-                  placeholder="请输入内容..."
-                  @keyup.enter="doConfirmHandle(item)"
-                >
-                <div
-                  v-else
-                  class="input-text"
-                >
-                  {{ item.todo_info }}
-                </div>
-              </div>
-              <div class="bottom-wrap">
-                <div class="create-time-wrap">
-                  <template v-if="item.create_time">
-                    {{ formatTime(item.create_time) }}
-                  </template>
-                </div>
-                <div class="options-wrap">
-                  <template v-if="item.edit">
-                    <div class="edit-btn" @click="doConfirmHandle(item)">保存</div>
-                  </template>
-                  <template v-else>
-                    <div class="edit-btn" @click="changeEditStatus(item)">编辑</div>
-                    <div class="delete-btn" @click="doDeleteHandle(item)">删除</div>
-                  </template>
-                </div>
-              </div>
-            </div>
+            </span>
           </div>
         </div>
-
+        <the-todo-list
+          v-if="todoList.length > 0"
+          ref="theTodoListRef"
+          :todo-list="todoList"
+          @complete="changeCompleteStatus"
+          @save="doConfirmHandle"
+          @edit="changeEditStatus"
+          @delete="doDeleteHandle"
+        />
         <div
           v-else
           class="empty-wrap"
@@ -110,19 +63,61 @@
           <p class="empty-txt">暂无数据</p>
         </div>
       </div>
+
+      <div
+        v-if="completeTodoList.length > 0"
+        class="todo-list complete"
+      >
+        <div class="flex todo-list__header">
+          <div class="header-title">
+            已完成
+          </div>
+          <div class="header-right">
+            {{ completeTodoList.length }}
+
+            <span
+              v-if="isCollapse"
+              class="btn"
+              @click="isCollapse = false"
+            >
+              <svg-icon
+                icon-class="down"
+                class-name="down-icon"
+              />
+            </span>
+            <span
+              v-else
+              class="btn"
+              @click="isCollapse = true"
+            >
+              <svg-icon
+                icon-class="up"
+                class-name="up-icon"
+              />
+            </span>
+          </div>
+        </div>
+        <the-todo-list
+          v-if="!isCollapse"
+          ref="theCompleteTodoListRef"
+          :todo-list="completeTodoList"
+          @complete="changeCompleteStatus"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import TheCalendar from './components/TheCalendar'
+import TheTodoList from './components/TheTodoList'
 import { CHROME_EXT_TODO } from '@/DB/constant'
 import IndexDB from '@/DB/index'
-import { parseTime } from '@/utils/index'
 export default {
   name: 'Todo',
   components: {
-    TheCalendar
+    TheCalendar,
+    TheTodoList
   },
   data() {
     return {
@@ -134,7 +129,10 @@ export default {
       today: new Date().getDate(), // 今日
 
       curLunarDay: '', // 农历信息
-      todoList: [],
+      todoList: [], // 未完成
+
+      isCollapse: false,
+      completeTodoList: [], // 已完成
 
       hasScheduleDays: [] // 有日程的日期数组
     }
@@ -152,9 +150,7 @@ export default {
         }, true)
       })
     },
-    formatTime(timeStamp) {
-      return parseTime(timeStamp) || ''
-    },
+
     dayChangeHandle({ year, month, day, dayInfo }) {
       const monthMap = {
         1: '一月',
@@ -192,7 +188,9 @@ export default {
       const result = await IndexDB.selectByIndex(CHROME_EXT_TODO, 'todo_key', todoKey)
 
       if (+result.code === 200) {
-        this.todoList = result?.data || []
+        const data = result?.data || []
+        this.todoList = data.filter(item => !item.complete)
+        this.completeTodoList = data.filter(item => item.complete)
       }
     },
     monthChangeHandle(year, month, monthDays) {
@@ -272,9 +270,8 @@ export default {
       const index = this.todoList.findIndex(todoItem => item.id === todoItem.id)
       this.todoList[index].edit = true
       this.$set(this.todoList, index, this.todoList[index])
-      this.$nextTick(() => {
-        this.$refs.inputRef[0].focus()
-      })
+
+      this.$refs.theTodoListRef.setInputFocus()
     },
     /**
      * @description: 点击是否完成按钮，修改状态
@@ -297,6 +294,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+  .flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
   .todo-wrap {
     width: 100%;
     min-width: 560px;
@@ -305,149 +307,87 @@ export default {
     box-sizing: border-box;
     overflow: auto;
     background-color: $-color-main-grey;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
     .todo-list-wrap {
       flex: 1;
       padding: 0 3%;
       box-sizing: border-box;
+      position: relative;
       .todo-list {
-        height: 100%;
+        flex: 1;
         background-color: $-color-white;
         border-radius: 18px;
         padding: 18px 3%;
         box-sizing: border-box;
-        position: relative;
-        overflow-y: auto;
+        &.complete {
+          flex: 0;
+          margin-top: 10px;
+        }
         .todo-list__header {
           padding-bottom: 18px;
           border-bottom: 1px solid $-color-sub-grey;
-        }
-        .btn-wrap {
-          width: 50px;
-          height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: absolute;
-          right: 20px;
-          border-radius: 50%;
-          cursor: pointer;
-          z-index: 99;
-
-          &.today {
-            bottom: 80px;
-            background-color: $-color-white;
-            box-shadow: 0 8px 5px -5px rgba(0,0,0,.4);
-            color: $-color-main;
-            .today-txt {
-              height: 50px;
-              width: 50px;
-              position: absolute;
-              text-align: center;
-              line-height: 52px;
-              left: 1px;
+          flex-direction: row;
+          font-size: 16px;
+          font-weight: 500;
+          .header-right {
+            display: flex;
+            align-items: center;
+            .btn {
+              padding: 0 10px 0 20px;
+              box-sizing: border-box;
+              cursor: pointer;
+              font-size: 18px;
+              &.search {
+                font-size: 22px;
+              }
             }
-            .rilikuang-icon {
-              font-size: 24px;
-            }
-          }
-
-          &.add {
-            bottom: 20px;
-            background-color: $-color-main;
-            box-shadow: 0 8px 5px -5px rgba(85, 135, 240, .4);
-            color: $-color-white;
-            .add-icon {
-              font-size: 30px;
+            .btn:hover {
+              color: $-color-main;
             }
           }
         }
       }
-      .todo-list__item {
+
+      .btn-wrap {
+        width: 50px;
+        height: 50px;
         display: flex;
         align-items: center;
-        border-top: 1px solid $-color-sub-grey;
-        &:first-child {
-          border-top-width: 0;
-        }
-        .complete-status {
-          width: 50px;
-          min-height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          .doing-icon,
-          .complete-icon {
-            font-size: 22px;
-            color: $-color-grey-font;
+        justify-content: center;
+        position: fixed;
+        right: 10%;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 99;
+
+        &.today {
+          bottom: 80px;
+          background-color: $-color-white;
+          box-shadow: 0 8px 5px -5px rgba(0,0,0,.4);
+          color: $-color-main;
+          .today-txt {
+            height: 50px;
+            width: 50px;
+            position: absolute;
+            text-align: center;
+            line-height: 52px;
+            left: 1px;
           }
-          .complete-icon {
-            color: $-color-main;
-          }
-        }
-        .item-content {
-          flex: 1;
-          position: relative;
-          .input-wrap {
-            padding-top: 10px;
-            margin-left: 10px;
-            border-bottom: 1px solid $-color-main-grey;
-            .input-text {
-              width: 100%;
-              min-height: 42px;
-              padding: 10px 12px;
-              box-sizing: border-box;
-              border: 1px solid $-color-white;
-              font-size: 14px;
-            }
-            input[type=text]:focus {
-              outline: 0 solid #ffffff;
-              border-bottom: 1px solid $-color-main;
-            }
+          .rilikuang-icon {
+            font-size: 24px;
           }
         }
-        .item-content::before {
-          content: '';
-          position: absolute;
-          top: 25px;
-          bottom: 25px;
-          width: 2px;
-          border-radius: 2px;
-        }
-        .item-content.complete::before {
-          background-color: $-color-success;
-        }
-        .item-content.normal::before {
+
+        &.add {
+          bottom: 20px;
           background-color: $-color-main;
-        }
-        .bottom-wrap {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-left: 10px;
-          padding: 8px 12px 10px;
-          box-sizing: border-box;
-          .create-time-wrap {
-            font-size: 12px;
-            color: $-color-grey-font;
-          }
-          .options-wrap {
-            display: flex;
-            color: $-color-grey-font;
-            .edit-btn,
-            .delete-btn {
-              cursor: pointer;
-              font-size: 12px;
-            }
-            .delete-btn {
-              margin-left: 10px;
-            }
+          box-shadow: 0 8px 5px -5px rgba(85, 135, 240, .4);
+          color: $-color-white;
+          .add-icon {
+            font-size: 30px;
           }
         }
       }
+
       .empty-wrap {
         display: flex;
         align-items: center;
