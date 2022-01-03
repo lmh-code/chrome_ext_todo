@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="header-wrap">
+    <div class="flex header-wrap">
       <div class="header-wrap__date">
         <span
           class="pre-btn"
@@ -41,49 +41,54 @@
         {{ item }}
       </div>
     </div>
-    <div class="flex day-list">
-      <div
-        v-for="item of lastMonthDays"
-        :key="`${item.day}_l`"
-        class="day-list__item last"
-      >
+    <div
+      v-for="(colItems, index) of monthDays"
+      :key="index"
+      class="flex day-list"
+    >
+      <template v-for="item of colItems">
         <div
-          class="day-wrap"
-          :class="getClass(item)"
-          @click="checkedDayChange(item, true)"
+          v-if="index === currentColIndex || !isCollapse"
+          :key="`${item.year}-${item.month}-${item.day}`"
+          class="day-list__item"
+          :class="item.flag === -1 ? 'last' : item.flag === 0 ? 'current' : 'next'"
         >
-          <div class="day-wrap__text">{{ item.day }}</div>
-          <div class="day-wrap-lunar__text">{{ item.lunarDay }}</div>
+          <div
+            class="day-wrap"
+            :class="getClass(item)"
+            @click="checkedDayChange(item, true)"
+          >
+            <div class="day-wrap__text">{{ item.day }}</div>
+            <div class="day-wrap-lunar__text">{{ item.lunarDay }}</div>
+          </div>
         </div>
-      </div>
-      <div
-        v-for="item of currentMonthDays"
-        :key="`${item.day}_c`"
-        class="day-list__item current"
+      </template>
+    </div>
+
+    <div
+      v-if="showToggle"
+      class="flex toggle-btn"
+    >
+      <span
+        v-if="isCollapse"
+        class="btn"
+        @click="isCollapse = false"
       >
-        <div
-          class="day-wrap"
-          :class="getClass(item)"
-          @click="checkedDayChange(item)"
-        >
-          <div class="day-wrap__text">{{ item.day }}</div>
-          <div class="day-wrap-lunar__text">{{ item.lunarDay }}</div>
-        </div>
-      </div>
-      <div
-        v-for="item of nextMonthDays"
-        :key="`${item.day}_n`"
-        class="day-list__item next"
+        <svg-icon
+          icon-class="down"
+          class-name="down-icon"
+        />  展开
+      </span>
+      <span
+        v-else
+        class="btn"
+        @click="isCollapse = true"
       >
-        <div
-          class="day-wrap"
-          :class="getClass(item)"
-          @click="checkedDayChange(item, true)"
-        >
-          <div class="day-wrap__text">{{ item.day }}</div>
-          <div class="day-wrap-lunar__text">{{ item.lunarDay }}</div>
-        </div>
-      </div>
+        <svg-icon
+          icon-class="up"
+          class-name="up-icon"
+        />  收起
+      </span>
     </div>
   </div>
 </template>
@@ -91,16 +96,41 @@
 <script>
 import calendar from '@/utils/calendar'
 export default {
+  props: {
+    /**
+     * @description: 是否显示折叠收起按钮
+     */
+    showToggle: {
+      type: Boolean,
+      default: true
+    },
+    /**
+     * @description: 是否折叠起来
+     */
+    collapse: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
+      isCollapse: false,
+      currentColIndex: 0,
+
       weekList: ['日', '一', '二', '三', '四', '五', '六'],
       checkedYear: new Date().getFullYear(),
       checkedMonth: new Date().getMonth() + 1,
       checkedDay: new Date().getDate(),
 
-      lastMonthDays: [],
-      currentMonthDays: [],
-      nextMonthDays: []
+      monthDays: [] // 日历视图中的日期
+    }
+  },
+  watch: {
+    collapse: {
+      immediate: true,
+      handler(newVal) {
+        this.isCollapse = newVal
+      }
     }
   },
   mounted() {
@@ -168,6 +198,7 @@ export default {
           }
           const day = lastMonthDay - startWeek + 1 + i
           lastMonthDays.push({
+            flag: -1,
             year: rYear,
             month: rMonth,
             day,
@@ -177,6 +208,7 @@ export default {
           // 当月天数
           const day = i + 1 - startWeek
           currentMonthDays.push({
+            flag: 0,
             year,
             month,
             day,
@@ -195,6 +227,7 @@ export default {
           }
           const day = i + 1 - (startWeek + fullDay)
           nextMonthDays.push({
+            flag: 1,
             year: rYear,
             month: rMonth,
             day,
@@ -202,11 +235,25 @@ export default {
           })
         }
       }
-      this.lastMonthDays = lastMonthDays
-      this.currentMonthDays = currentMonthDays
-      this.nextMonthDays = nextMonthDays
-
-      console.log(lastMonthDays, currentMonthDays, nextMonthDays)
+      const monthDaysTemp = [...lastMonthDays, ...currentMonthDays, ...nextMonthDays]
+      this.monthDays = this.arrTranslate(7, monthDaysTemp)
+      // console.log(lastMonthDays, currentMonthDays, nextMonthDays)
+    },
+    /**
+     * @description: 数组转换 将一维数组变为二维数组
+     * @param {*} num 列数 也就是二维数组中元素的length
+     * @return {*} arr 要转换的一维数组
+     */
+    arrTranslate(num, arr) {
+      const result = []
+      arr.forEach((item, index) => {
+        const pageNum = Math.floor(index / (+num))
+        if (!result[pageNum]) {
+          result[pageNum] = []
+        }
+        result[pageNum].push(item)
+      })
+      return result
     },
     /**
      * @description: 切换当前选中日期
@@ -220,16 +267,23 @@ export default {
       this.checkedMonth = month
       this.checkedDay = day
 
+      // 点击的日期是上一个月或者下一个月的日期时，触发获取当月日期信息函数
+      if (change === true) {
+        this.getCalenderInfo(year, month)
+      }
+
+      // 如果折叠 根据当前年月日计算出要展示的行
+      if (this.collapse) {
+        const index = this.monthDays.findIndex(colItem => colItem.find(item => item.year === year && item.month === month && item.day === day))
+        this.currentColIndex = index
+      }
+
       this.$emit('change', {
         year: this.checkedYear,
         month: this.checkedMonth,
         day: this.checkedDay,
         dayInfo: calendar.solar2lunar(year, month, day)
       })
-
-      if (change === true) {
-        this.getCalenderInfo(year, month)
-      }
     },
     /**
      * @description: 月份发生变化
@@ -255,19 +309,25 @@ export default {
         }
       }
 
-      this.checkedDayChange({ year, month, day: 1 }, true)
+      const day = year === new Date().getFullYear() && month === new Date().getMonth() + 1 ? new Date().getDate() : 1
+
+      this.checkedDayChange({ year, month, day }, true)
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+  .flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+  }
+
   .header-wrap {
     width: 100%;
     height: 48px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 0 6%;
     box-sizing: border-box;
     .header-wrap__date {
@@ -291,18 +351,6 @@ export default {
     }
   }
 
-  .flex {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .week-list {
-    flex-wrap: nowrap;
-  }
-  .day-list {
-    flex-wrap: wrap;
-  }
   .week-list__item,
   .day-list__item {
     width: 14.285%;
@@ -346,6 +394,17 @@ export default {
       &.n {
         border: 1px solid $-color-main;
       }
+    }
+  }
+
+  .toggle-btn {
+    padding: 10px 0;
+    justify-content: center;
+    .btn {
+      cursor: pointer;
+    }
+    .btn:hover {
+      color: $-color-main;
     }
   }
 </style>
