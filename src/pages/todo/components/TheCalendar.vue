@@ -56,10 +56,13 @@
           <div
             class="day-wrap"
             :class="getClass(item)"
-            @click="checkedDayChange(item, true)"
+            @click="checkedDayChange(item, item.flag !== 0)"
           >
             <div class="day-wrap__text">{{ item.day }}</div>
-            <div class="day-wrap-lunar__text">{{ item.lunarDay }}</div>
+            <div
+              class="day-wrap-lunar__text"
+              :class="item.special ? 'special' : ''"
+            >{{ item.lunarDay }}</div>
           </div>
         </div>
       </template>
@@ -95,6 +98,7 @@
 
 <script>
 import calendar from '@/utils/calendar'
+import { deepClone } from '@/utils/index'
 export default {
   props: {
     /**
@@ -110,6 +114,13 @@ export default {
     collapse: {
       type: Boolean,
       default: false
+    },
+    /**
+     * @description: 需要特殊标记的日期
+     */
+    specialDays: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -131,6 +142,23 @@ export default {
       handler(newVal) {
         this.isCollapse = newVal
       }
+    },
+    specialDays: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal && newVal.length) {
+          const monthDaysTemp = deepClone(this.monthDays)
+          monthDaysTemp.forEach(colItem => {
+            colItem.forEach(item => {
+              const dayInfo = `${item.year}-${item.month}-${item.day}`
+              if (newVal.includes(dayInfo)) {
+                item.special = true
+              }
+            })
+          })
+          this.monthDays = monthDaysTemp
+        }
+      }
     }
   },
   mounted() {
@@ -141,13 +169,11 @@ export default {
      * @description: 日历初始化
      */
     initCalendar() {
-      this.getCalenderInfo(this.checkedYear, this.checkedMonth)
-
       this.checkedDayChange({
         year: this.checkedYear,
         month: this.checkedMonth,
         day: this.checkedDay
-      })
+      }, true)
     },
     /**
      * @description: 获取当前被选中的日子的天数
@@ -238,6 +264,8 @@ export default {
       const monthDaysTemp = [...lastMonthDays, ...currentMonthDays, ...nextMonthDays]
       this.monthDays = this.arrTranslate(7, monthDaysTemp)
       // console.log(lastMonthDays, currentMonthDays, nextMonthDays)
+
+      this.$emit('month-change', year, month, monthDaysTemp)
     },
     /**
      * @description: 数组转换 将一维数组变为二维数组
@@ -278,7 +306,7 @@ export default {
         this.currentColIndex = index
       }
 
-      this.$emit('change', {
+      this.$emit('day-change', {
         year: this.checkedYear,
         month: this.checkedMonth,
         day: this.checkedDay,
@@ -381,6 +409,18 @@ export default {
       }
       .day-wrap-lunar__text {
         font-size: 12px;
+        position: relative;
+        &.special::after {
+          content: "";
+          display: block;
+          width: 6px;
+          height: 6px;
+          position: absolute;
+          left: 50%;
+          margin-left: -3px;
+          background-color: $-color-hover;
+          border-radius: 50%;
+        }
       }
     }
     .day-wrap.checked-day {
@@ -390,6 +430,9 @@ export default {
       &.c {
         background-color: $-color-main;
         color: $-color-white;
+        .special::after {
+          background-color: $-color-white;
+        }
       }
       &.n {
         border: 1px solid $-color-main;

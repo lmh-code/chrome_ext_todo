@@ -2,7 +2,9 @@
   <div class="todo-wrap">
     <the-calendar
       :collapse="true"
-      @change="changeHandle"
+      :special-days="hasScheduleDays"
+      @day-change="dayChangeHandle"
+      @month-change="monthChangeHandle"
     />
     <div class="todo-list-wrap">
       <div class="todo-list">
@@ -91,6 +93,7 @@
             </div>
           </div>
         </div>
+
         <div
           v-else
           class="empty-wrap"
@@ -126,14 +129,16 @@ export default {
       today: new Date().getDate(), // 今日
 
       curLunarDay: '', // 农历信息
-      todoList: []
+      todoList: [],
+
+      hasScheduleDays: [] // 有日程的日期数组
     }
   },
   methods: {
     formatTime(timeStamp) {
       return parseTime(timeStamp) || ''
     },
-    changeHandle({ year, month, day, dayInfo }) {
+    dayChangeHandle({ year, month, day, dayInfo }) {
       const monthMap = {
         1: '一月',
         2: '二月',
@@ -164,10 +169,27 @@ export default {
       this.getTodoListByKey(`${this.curYear}-${this.curMonth}-${this.curDay}`)
     },
     async getTodoListByKey(todoKey) {
-      const result = await IndexDB.select(CHROME_EXT_TODO, 'todo_key', todoKey)
+      const result = await IndexDB.selectByIndex(CHROME_EXT_TODO, 'todo_key', todoKey)
 
       if (+result.code === 200) {
         this.todoList = result?.data || []
+      }
+    },
+    monthChangeHandle(year, month, monthDays) {
+      this.getDataByCondition(monthDays)
+    },
+    async getDataByCondition(monthDays) {
+      const todoKeys = monthDays.map(item => `${item.year}-${item.month}-${item.day}`)
+      const result = await IndexDB.selectByCondition(
+        CHROME_EXT_TODO,
+        function(value) {
+          return todoKeys.includes(value.todo_key)
+        }
+      )
+      if (result.code === 200) {
+        const data = result?.data || []
+        const keys = data.map(item => item.todo_key)
+        this.hasScheduleDays = [...new Set(keys)]
       }
     },
     addHandle() {
@@ -199,10 +221,14 @@ export default {
 
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
+
+        if (!this.hasScheduleDays.includes(item.todo_key)) {
+          this.hasScheduleDays.push(item.todo_key)
+        }
       }
     },
     async doEditHandle(item) {
-      const result = await IndexDB.update(CHROME_EXT_TODO, {
+      const result = await IndexDB.updateByPrimaryKey(CHROME_EXT_TODO, {
         id: item.id,
         create_time: item.create_time,
         update_time: new Date().getTime(),
@@ -241,7 +267,7 @@ export default {
      * @description: 删除数据
      */
     async doDeleteHandle(item) {
-      const result = await IndexDB.delete(CHROME_EXT_TODO, item.id)
+      const result = await IndexDB.deleteByPrimaryKey(CHROME_EXT_TODO, item.id)
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
       }

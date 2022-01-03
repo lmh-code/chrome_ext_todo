@@ -1,3 +1,5 @@
-export function isExternal(path) {
-  return /^(https?:|mailto:|tel:)/.test(path)
-}
+export const isExternal = (path) => /^(https?:|mailto:|tel:)/.test(path)
+
+export const isObject = data => Object.prototype.toString.call(data) === '[object Object]'
+
+export const isArray = data => Object.prototype.toString.call(data) === '[object Array]'

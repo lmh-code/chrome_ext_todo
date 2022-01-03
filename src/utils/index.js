@@ -1,3 +1,6 @@
+/**
+ * @description: 格式化时间
+ */
 export function parseTime(time, cFormat) {
   if (arguments.length === 0) {
     return null
@@ -34,4 +37,24 @@ export function parseTime(time, cFormat) {
     return value || 0
   })
   return timeStr
+}
+
+/**
+ * @description: 深拷贝
+ */
+export function deepClone(source) {
+  let targetObj
+  if (source && typeof source === 'object') {
+    targetObj = source.constructor === Array ? [] : {}
+    Object.keys(source).forEach((keys) => {
+      if (source[keys] && typeof source[keys] === 'object') {
+        targetObj[keys] = deepClone(source[keys])
+      } else {
+        targetObj[keys] = source[keys]
+      }
+    })
+  } else {
+    throw new Error('error arguments', 'deepClone')
+  }
+  return targetObj
 }
