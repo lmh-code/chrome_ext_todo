@@ -108,8 +108,9 @@
 
 <script>
 import TheCalendar from './components/TheCalendar'
-import IndexDB from '@/utils/IndexDB.js'
-import { parseTime } from '@/utils/index.js'
+import { CHROME_EXT_TODO } from '@/DB/constant'
+import IndexDB from '@/DB/index'
+import { parseTime } from '@/utils/index'
 export default {
   name: 'Todo',
   components: {
@@ -126,15 +127,6 @@ export default {
 
       curLunarDay: '', // 农历信息
       todoList: []
-    }
-  },
-  async mounted() {
-    this.openDBStatus = await IndexDB.openDB() // 连接数据库并创建数据表
-    if (this.openDBStatus === 'onsuccess' || this.openDBStatus === 'onupgradeneeded') {
-      // 根据索引获取数据
-      setTimeout(() => {
-        this.getTodoListByKey(`${this.curYear}-${this.curMonth}-${this.curDay}`)
-      }, 100)
     }
   },
   methods: {
@@ -169,12 +161,10 @@ export default {
       this.curLunarDay = `农历${monthMap[lMonth]}${IMonthCn && IMonthCn !== monthMap[lMonth] ? '(' + IMonthCn + ')' : ''}${IDayCn}`
 
       // 日期发生变化获取todoList数据
-      if (this.openDBStatus === 'onsuccess' || this.openDBStatus === 'onupgradeneeded') {
-        this.getTodoListByKey(`${this.curYear}-${this.curMonth}-${this.curDay}`)
-      }
+      this.getTodoListByKey(`${this.curYear}-${this.curMonth}-${this.curDay}`)
     },
     async getTodoListByKey(todoKey) {
-      const result = await IndexDB.selectByIndex('chrome_ext_todo', 'todo_key', todoKey)
+      const result = await IndexDB.select(CHROME_EXT_TODO, 'todo_key', todoKey)
 
       if (+result.code === 200) {
         this.todoList = result?.data || []
@@ -199,7 +189,7 @@ export default {
       }
     },
     async doAddHandle(item) {
-      const result = await IndexDB.insert('chrome_ext_todo', {
+      const result = await IndexDB.insert(CHROME_EXT_TODO, {
         create_time: new Date().getTime(),
         update_time: item.update_time,
         todo_key: item.todo_key,
@@ -212,7 +202,7 @@ export default {
       }
     },
     async doEditHandle(item) {
-      const result = await IndexDB.update('chrome_ext_todo', {
+      const result = await IndexDB.update(CHROME_EXT_TODO, {
         id: item.id,
         create_time: item.create_time,
         update_time: new Date().getTime(),
@@ -251,7 +241,7 @@ export default {
      * @description: 删除数据
      */
     async doDeleteHandle(item) {
-      const result = await IndexDB.deleteById('chrome_ext_todo', item.id)
+      const result = await IndexDB.delete(CHROME_EXT_TODO, item.id)
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
       }
