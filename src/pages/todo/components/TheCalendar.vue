@@ -10,7 +10,83 @@
           class-name="options-icon"
         />
       </span>
-      <span> {{ checkedYear }}</span>年<span>{{ checkedMonth }}</span>月
+      <div class="checked-date-wrap">
+        <span
+          class="txt-wrap"
+          :class="showYearPopup ? 'active' : ''"
+          @click="changeYearPopupToggle"
+        >
+          {{ checkedYear }}年
+        </span>
+        <!-- 切换年份的popup弹窗 -->
+        <div
+          v-if="showYearPopup"
+          class="popup-wrap year"
+          @mouseleave="showYearPopup = false"
+        >
+          <div class="flex year-wrap">
+            <span class="pre-btn" @click="changeYearRange(-1)">
+              <svg-icon
+                icon-class="next"
+                class-name="next-btn-icon"
+              />
+            </span>
+            <span>{{ firstYear }} 年 - {{ lastYear }} 年</span>
+            <span class="next-btn" @click="changeYearRange(1)">
+              <svg-icon
+                icon-class="next"
+                class-name="next-btn-icon"
+              />
+            </span>
+          </div>
+          <ul class="list-wrap year">
+            <li
+              v-for="item of yearList"
+              :key="item"
+              :class="item === new Date().getFullYear() ? 'cur' : item === checkedYear ? 'active' : ''"
+              @click="changeYearByPopup(item)"
+            >{{ item }}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="checked-date-wrap">
+        <span
+          class="txt-wrap"
+          :class="showMonthPopup ? 'active' : ''"
+          @click="changeMonthPopupToggle"
+        >
+          {{ checkedMonth }}月
+        </span>
+        <!-- 切换月份的popup弹窗 -->
+        <div
+          v-if="showMonthPopup"
+          class="popup-wrap"
+          @mouseleave="showMonthPopup = false"
+        >
+          <div class="flex year-wrap">
+            <span class="pre-btn" @click="changeCurYear(-1)">
+              <svg-icon
+                icon-class="next"
+                class-name="next-btn-icon"
+              />
+            </span>
+            <span>{{ checkedYearTemp }} 年</span>
+            <span class="next-btn" @click="changeCurYear(1)">
+              <svg-icon
+                icon-class="next"
+                class-name="next-btn-icon"
+              />
+            </span>
+          </div>
+          <ul class="list-wrap">
+            <li
+              v-for="item of monthList"
+              :key="item.value"
+              @click="changeMonthByPopup(item.value)"
+            >{{ item.label }}</li>
+          </ul>
+        </div>
+      </div>
       <span
         class="next-btn"
         @click="changeMonth(1)"
@@ -52,8 +128,8 @@
             <div class="day-wrap__text">{{ item.day }}</div>
             <div
               class="day-wrap-lunar__text"
-              :class="item.special ? 'special' : ''"
-            >{{ item.lunarDay }}</div>
+              :class="item.special ? (item.lunarDay === '初一' ? 'special first' : 'special') : (item.lunarDay === '初一' ? 'first' : '')"
+            >{{ item.lunarFestival ? item.lunarFestival : item.festival ? item.festival : item.lunarDay }}</div>
           </div>
         </div>
       </template>
@@ -124,7 +200,65 @@ export default {
       checkedMonth: new Date().getMonth() + 1,
       checkedDay: new Date().getDate(),
 
-      monthDays: [] // 日历视图中的日期
+      monthDays: [], // 日历视图中的日期
+
+      yearList: [],
+      showYearPopup: false,
+      firstYear: '',
+      lastYear: '',
+
+      checkedYearTemp: '',
+      showMonthPopup: false,
+      monthList: [
+        {
+          label: '一月',
+          value: 1
+        },
+        {
+          label: '二月',
+          value: 2
+        },
+        {
+          label: '三月',
+          value: 3
+        },
+        {
+          label: '四月',
+          value: 4
+        },
+        {
+          label: '五月',
+          value: 5
+        },
+        {
+          label: '六月',
+          value: 6
+        },
+        {
+          label: '七月',
+          value: 7
+        },
+        {
+          label: '八月',
+          value: 8
+        },
+        {
+          label: '九月',
+          value: 9
+        },
+        {
+          label: '十月',
+          value: 10
+        },
+        {
+          label: '十一月',
+          value: 11
+        },
+        {
+          label: '十二月',
+          value: 12
+        }
+      ]
     }
   },
   watch: {
@@ -214,22 +348,30 @@ export default {
             rMonth = month - 1
           }
           const day = lastMonthDay - startWeek + 1 + i
+          const lunarDayInfo = calendar.solar2lunar(rYear, rMonth, day)
           lastMonthDays.push({
             flag: -1,
             year: rYear,
             month: rMonth,
             day,
-            lunarDay: calendar.solar2lunar(rYear, rMonth, day)?.IDayCn || ''
+            nWeek: lunarDayInfo?.nWeek || '',
+            festival: lunarDayInfo?.festival || '',
+            lunarFestival: lunarDayInfo?.lunarFestival || '',
+            lunarDay: lunarDayInfo?.IDayCn || ''
           })
         } else if (i < (startWeek + fullDay)) {
           // 当月天数
           const day = i + 1 - startWeek
+          const lunarDayInfo = calendar.solar2lunar(year, month, day)
           currentMonthDays.push({
             flag: 0,
             year,
             month,
             day,
-            lunarDay: calendar.solar2lunar(year, month, day)?.IDayCn || ''
+            nWeek: lunarDayInfo?.nWeek || '',
+            festival: lunarDayInfo?.festival || '',
+            lunarFestival: lunarDayInfo?.lunarFestival || '',
+            lunarDay: lunarDayInfo?.IDayCn || ''
           })
         } else {
           // 当月最后一天不是周六的时候，剩下的各自就渲染下月的天数
@@ -243,12 +385,16 @@ export default {
             rMonth = month + 1
           }
           const day = i + 1 - (startWeek + fullDay)
+          const lunarDayInfo = calendar.solar2lunar(rYear, rMonth, day)
           nextMonthDays.push({
             flag: 1,
             year: rYear,
             month: rMonth,
             day,
-            lunarDay: calendar.solar2lunar(rYear, rMonth, day)?.IDayCn || ''
+            nWeek: lunarDayInfo?.nWeek || '',
+            festival: lunarDayInfo?.festival || '',
+            lunarFestival: lunarDayInfo?.lunarFestival || '',
+            lunarDay: lunarDayInfo?.IDayCn || ''
           })
         }
       }
@@ -331,6 +477,92 @@ export default {
       const day = year === new Date().getFullYear() && month === new Date().getMonth() + 1 ? new Date().getDate() : 1
 
       this.checkedDayChange({ year, month, day }, true)
+    },
+    /**
+     * @description: 显示或者隐藏切换年份的popup弹窗
+     */
+    changeYearPopupToggle() {
+      this.showMonthPopup = false
+
+      // 取当前年所在的10年内的数据
+      const checkedYearStr = this.checkedYear.toString()
+      const length = checkedYearStr.length
+      this.firstYear = Number(`${checkedYearStr.slice(0, length - 1)}0`)
+      this.lastYear = Number(`${checkedYearStr.slice(0, length - 1)}9`)
+
+      this.yearList = this.getYearList(this.firstYear, this.lastYear)
+
+      this.showYearPopup = !this.showYearPopup
+    },
+    getYearList(firstYear, lastYear) {
+      firstYear = Number(firstYear)
+      lastYear = Number(lastYear)
+      const yearList = []
+      for (let i = 0; i <= lastYear - firstYear; i++) {
+        yearList.push(firstYear + i)
+      }
+      return yearList
+    },
+    /**
+     * @description: 年份的popup弹窗中切换年份范围
+     * @param {*} type 操作类型
+     */
+    changeYearRange(type) {
+      if (type === 1) {
+        this.firstYear = this.firstYear + 10
+        this.lastYear = this.lastYear + 10
+      } else {
+        this.firstYear = this.firstYear - 10
+        this.lastYear = this.lastYear - 10
+      }
+      this.yearList = this.getYearList(this.firstYear, this.lastYear)
+    },
+    /**
+     * @description: 通过popup弹窗切换年份
+     */
+    changeYearByPopup(year) {
+      this.showYearPopup = false
+
+      if (+this.checkedYear === +year) {
+        return
+      }
+      this.checkedYear = parseInt(year)
+      this.checkedDayChange({
+        year,
+        month: this.checkedMonth,
+        day: this.checkedDay
+      }, true)
+    },
+    /**
+     * @description: 显示或者隐藏切换也月份的popup弹窗
+     */
+    changeMonthPopupToggle() {
+      this.showYearPopup = false
+      this.showMonthPopup = !this.showMonthPopup
+      this.checkedYearTemp = this.checkedYear
+    },
+    /**
+     * @description: 月份popup弹窗中快速切换年份
+     * @param {*} dVal 差值
+     */
+    changeCurYear(dVal) {
+      this.checkedYearTemp = this.checkedYearTemp + dVal
+    },
+    /**
+     * @description: 通过popup弹窗切换月份
+     */
+    changeMonthByPopup(month) {
+      this.showMonthPopup = false
+
+      if (+this.checkedMonth === +month) {
+        return
+      }
+      this.checkedMonth = parseInt(month)
+      this.checkedDayChange({
+        year: this.checkedYearTemp,
+        month,
+        day: this.checkedDay
+      }, true)
     }
   }
 }
@@ -361,6 +593,90 @@ export default {
     }
     .next-btn {
       margin-left: 6px;
+    }
+
+    .checked-date-wrap {
+      position: relative;
+      .txt-wrap {
+        cursor: pointer;
+        &.active {
+          color: $-color-hover;
+        }
+      }
+      .txt-wrap:hover {
+        color: $-color-hover;
+      }
+      .popup-wrap {
+        width: 240px;
+        position: absolute;
+        background-color: $-color-white;
+        left: 0;
+        top: 40px;
+        padding-top: 10px;
+        padding-bottom: 16px;
+        border-radius: 4px;
+        z-index: 2022;
+        border: 1px solid $-color-grey-1;
+        box-shadow: 0 2px 12px 0 $-color-grey-1;
+        color: $-color-font;
+        font-size: 14px;
+        &.year {
+          width: 260px;
+        }
+        .year-wrap {
+          padding: 0 18px 8px;
+          font-size: 16px;
+          font-weight: 500;
+          border-bottom: 1px solid $-color-grey-1;
+          .pre-btn,
+          .next-btn {
+            font-size: 16px;
+          }
+          .pre-btn {
+            transform: rotate(180deg);
+          }
+        }
+        .list-wrap {
+          padding: 0 18px;
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          li {
+            text-align: center;
+            width: 33.33%;
+            line-height: 38px;
+            cursor: pointer;
+          }
+          &.year {
+            li {
+              width: 25%;
+              &.active {
+                color: $-color-hover;
+              }
+              &.cur {
+                color: $-color-hover;
+                font-weight: 500;
+              }
+            }
+          }
+          li:hover {
+            color: $-color-hover;
+          }
+          &::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            top: -5px;
+            left: 20px;
+            border-top: 1px solid $-color-grey-1;
+            border-left: 1px solid $-color-grey-1;
+            border-radius: 2px;
+            background-color: $-color-white;
+            transform: rotate(45deg);
+          }
+        }
+      }
     }
   }
 
@@ -406,6 +722,17 @@ export default {
           background-color: $-color-hover;
           border-radius: 50%;
         }
+        &.first::before {
+          content: "";
+          display: block;
+          width: 90%;
+          height: 1px;
+          background-color: $-color-main;
+          position: absolute;
+          top: 15px;
+          left: 50%;
+          transform: translate(-50%, 0);
+        }
       }
     }
     .day-wrap.checked-day {
@@ -416,6 +743,9 @@ export default {
         background-color: $-color-main;
         color: $-color-white;
         .special::after {
+          background-color: $-color-white;
+        }
+        .first::before {
           background-color: $-color-white;
         }
       }

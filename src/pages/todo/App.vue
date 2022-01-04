@@ -10,7 +10,7 @@
 
     <div class="flex todo-list-wrap">
       <div
-        v-if="today !== curDay"
+        v-if="showCurrentDay"
         class="btn-wrap today"
         @click="goCurrentDay"
       >
@@ -135,6 +135,11 @@ export default {
       completeTodoList: [], // 已完成
 
       hasScheduleDays: [] // 有日程的日期数组
+    }
+  },
+  computed: {
+    showCurrentDay() {
+      return this.curDay !== new Date().getDate() || this.curMonth !== new Date().getMonth() + 1 || this.curYear !== new Date().getFullYear()
     }
   },
   methods: {
@@ -323,7 +328,7 @@ export default {
           margin-top: 10px;
         }
         .todo-list__header {
-          padding-bottom: 18px;
+          padding-bottom: 10px;
           border-bottom: 1px solid $-color-sub-grey;
           flex-direction: row;
           font-size: 16px;
