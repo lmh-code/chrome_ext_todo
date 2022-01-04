@@ -34,10 +34,12 @@
             class="input-text"
             placeholder="请输入内容..."
             @keyup.enter="doConfirmHandle(item)"
+            @blur="doBlurHandle(item)"
           >
           <div
             v-else
             class="input-text"
+            @dblclick="changeEditStatus(item)"
           >
             {{ item.todo_info }}
           </div>
@@ -76,7 +78,7 @@ export default {
   methods: {
     setInputFocus() {
       this.$nextTick(() => {
-        this.$refs.inputRef[0].focus()
+        this.$refs.inputRef && this.$refs.inputRef[0] && this.$refs.inputRef[0].focus()
       })
     },
     formatTime(timeStamp) {
@@ -93,6 +95,11 @@ export default {
     },
     doDeleteHandle(item) {
       this.$emit('delete', item)
+    },
+    doBlurHandle(item) {
+      if (item.edit) {
+        this.setInputFocus()
+      }
     }
   }
 }
@@ -139,6 +146,7 @@ export default {
           box-sizing: border-box;
           border: 1px solid $-color-white;
           font-size: 14px;
+          cursor: pointer;
         }
         input[type=text]:focus {
           outline: 0 solid #ffffff;

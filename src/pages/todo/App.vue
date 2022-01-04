@@ -216,17 +216,29 @@ export default {
       }
     },
     addHandle() {
-      this.todoList.push({
-        todo_key: `${this.curYear}-${this.curMonth}-${this.curDay}`,
-        todo_info: '',
-        complete: false,
-        edit: true
-      })
+      const index = this.todoList.findIndex(item => !item.todo_info)
+
+      if (index > -1) {
+        this.todoList[index].edit = true
+        this.$set(this.todoList, index, this.todoList[index])
+      } else {
+        this.todoList.push({
+          todo_key: `${this.curYear}-${this.curMonth}-${this.curDay}`,
+          todo_info: '',
+          complete: false,
+          edit: true
+        })
+      }
+
+      this.$refs.theTodoListRef.setInputFocus()
     },
     /**
      * @description: 新增 | 编辑数据
      */
     doConfirmHandle(item) {
+      if (!item.todo_info) {
+        return
+      }
       if (item.id) {
         this.doEditHandle(item)
       } else {
@@ -282,6 +294,10 @@ export default {
      * @description: 点击是否完成按钮，修改状态
      */
     changeCompleteStatus(item) {
+      if (!item.id) {
+        console.warn('库中暂无日程信息，不可点击完成！')
+        return
+      }
       item.complete = !item.complete
       this.doEditHandle(item)
     },
@@ -289,6 +305,10 @@ export default {
      * @description: 删除数据
      */
     async doDeleteHandle(item) {
+      if (!item.id) {
+        console.warn('库中暂无日程信息，不可点击删除！')
+        return
+      }
       const result = await IndexDB.deleteByPrimaryKey(CHROME_EXT_TODO, item.id)
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
