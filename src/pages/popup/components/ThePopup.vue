@@ -26,7 +26,7 @@
         </sub-menu>
         <div
           v-else
-          :key="index"
+          :key="`${index}_else`"
           @click="redirectPage(item)"
         >
           <menu-item
@@ -56,6 +56,29 @@
 <script>
 import SubMenu from '@/components/SubMenu/index.vue'
 import MenuItem from '@/components/MenuItem/index.vue'
+import storage from '@/utils/storage'
+const defaultMenus = [
+  {
+    url: 'todo.html',
+    title: 'TODO',
+    icon: 'todo'
+  },
+  {
+    title: '办公',
+    icon: 'dev',
+    children: []
+  },
+  {
+    title: '学习',
+    icon: 'study',
+    children: []
+  },
+  {
+    title: '其他',
+    icon: 'others',
+    children: []
+  }
+]
 export default {
   name: 'ThePopup',
   components: {
@@ -77,42 +100,22 @@ export default {
           alt: '设置'
         }
       ],
-      menus: [
-        {
-          url: 'todo.html',
-          title: 'TODO',
-          icon: 'todo'
-        },
-        {
-          title: '业务开发',
-          icon: 'dev',
-          children: [
-            {
-              url: 'todo.html',
-              title: '你好'
-            },
-            {
-              url: 'todo.html',
-              title: '世界'
-            }
-          ]
-        },
-        {
-          title: '职能建设',
-          icon: 'web',
-          children: [
-            {
-              url: 'todo.html',
-              title: '小红'
-            },
-            {
-              url: 'todo.html',
-              title: '小黑'
-            }
-          ]
-        }
-      ]
+      menus: []
     }
+  },
+  mounted() {
+    // storage.clear()
+    storage.get('menus').then(res => {
+      if (Object.keys(res).length) {
+        console.log('menus res:', res)
+        this.menus = res.menus
+      } else {
+        this.menus = defaultMenus
+        storage.set({
+          'menus': defaultMenus
+        })
+      }
+    })
   },
   methods: {
     goAddress(id) {
@@ -147,7 +150,7 @@ export default {
       box-sizing: border-box;
     }
     .header-wrap {
-      border-bottom: 1px dashed $-color-main-grey;
+      border-bottom: 1px dashed $-color-sub-grey;
     }
 
     .container {
@@ -161,7 +164,7 @@ export default {
     }
 
     .footer-wrap {
-      border-top: 1px dashed $-color-main-grey;
+      border-top: 1px dashed $-color-sub-grey;
       .options-icon {
         cursor: pointer;
         font-size: 18px;

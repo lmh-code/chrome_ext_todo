@@ -11,6 +11,7 @@
   "permissions": [
     "tabs",
     "contextMenus",
+    "storage",
     "https://secure.flickr.com/"
   ],
   "icons": {
