@@ -50,7 +50,7 @@
               {{ formatTime(item.create_time) }}
             </template>
           </div>
-          <div class="options-wrap">
+          <div v-if="!readOnly" class="options-wrap">
             <template v-if="item.edit">
               <div class="edit-btn" @click="doConfirmHandle(item)">保存</div>
             </template>
@@ -73,6 +73,10 @@ export default {
     todoList: {
       type: Array,
       default: () => []
+    },
+    readOnly: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {

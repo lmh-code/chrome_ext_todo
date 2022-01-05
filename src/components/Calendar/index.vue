@@ -485,10 +485,8 @@ export default {
       this.showMonthPopup = false
 
       // 取当前年所在的10年内的数据
-      const checkedYearStr = this.checkedYear.toString()
-      const length = checkedYearStr.length
-      this.firstYear = Number(`${checkedYearStr.slice(0, length - 1)}0`)
-      this.lastYear = Number(`${checkedYearStr.slice(0, length - 1)}9`)
+      this.firstYear = Number(`${Math.floor(this.checkedYear / 10)}0`)
+      this.lastYear = Number(`${Math.floor(this.checkedYear / 10)}9`)
 
       this.yearList = this.getYearList(this.firstYear, this.lastYear)
 
@@ -505,16 +503,11 @@ export default {
     },
     /**
      * @description: 年份的popup弹窗中切换年份范围
-     * @param {*} type 操作类型
+     * @param {*} baseNum 基数
      */
-    changeYearRange(type) {
-      if (type === 1) {
-        this.firstYear = this.firstYear + 10
-        this.lastYear = this.lastYear + 10
-      } else {
-        this.firstYear = this.firstYear - 10
-        this.lastYear = this.lastYear - 10
-      }
+    changeYearRange(baseNum) {
+      this.firstYear = this.firstYear + (baseNum * 10)
+      this.lastYear = this.lastYear + (baseNum * 10)
       this.yearList = this.getYearList(this.firstYear, this.lastYear)
     },
     /**
