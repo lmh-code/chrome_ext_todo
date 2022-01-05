@@ -1,7 +1,7 @@
 <template>
   <div class="popup-wrap">
     <header class="header-wrap">
-      WorkHelper (v1.0.0)
+      WorkHelper ({{ version }})
     </header>
     <div class="container">
       <template v-for="(item, index) of menus">
@@ -13,10 +13,13 @@
           :next-icon="item.nextIcon"
           :index="`${index}_${item.url}`"
         >
-          <div class="sub-menu-wrap">
+          <div
+            v-for="(subItem, subIndex) of item.children"
+            :key="subIndex"
+            class="sub-menu-wrap"
+            @click="redirectPage(subItem)"
+          >
             <menu-item
-              v-for="(subItem, subIndex) of item.children"
-              :key="subIndex"
               :icon="subItem.icon"
               :next-icon="subItem.nextIcon"
               :title="subItem.title"
@@ -54,31 +57,11 @@
 </template>
 
 <script>
+import { VERSION, DEFAULT_MENUS } from '@/utils/constant'
 import SubMenu from '@/components/SubMenu/index.vue'
 import MenuItem from '@/components/MenuItem/index.vue'
 import storage from '@/utils/storage'
-const defaultMenus = [
-  {
-    url: 'todo.html',
-    title: 'TODO',
-    icon: 'todo'
-  },
-  {
-    title: '办公',
-    icon: 'dev',
-    children: []
-  },
-  {
-    title: '学习',
-    icon: 'study',
-    children: []
-  },
-  {
-    title: '其他',
-    icon: 'others',
-    children: []
-  }
-]
+
 export default {
   name: 'ThePopup',
   components: {
@@ -87,7 +70,7 @@ export default {
   },
   data() {
     return {
-      message: 'hello chrome ext',
+      version: VERSION,
       links: [
         {
           id: 'github',
@@ -104,20 +87,22 @@ export default {
     }
   },
   mounted() {
-    // storage.clear()
-    storage.get('menus').then(res => {
-      if (Object.keys(res).length) {
-        console.log('menus res:', res)
-        this.menus = res.menus
-      } else {
-        this.menus = defaultMenus
-        storage.set({
-          'menus': defaultMenus
-        })
-      }
-    })
+    this.getMenusFromStorage()
   },
   methods: {
+    getMenusFromStorage() {
+      storage.get('menus').then(res => {
+        if (Object.keys(res).length) {
+          console.log('menus res:', res)
+          this.menus = res.menus
+        } else {
+          this.menus = DEFAULT_MENUS
+          storage.set({
+            'menus': DEFAULT_MENUS
+          })
+        }
+      })
+    },
     goAddress(id) {
       if (id === 'github') {
         chrome.tabs.create({ url: 'https://github.com/lmh-code/chrome_ext_vue' })
@@ -126,6 +111,7 @@ export default {
       }
     },
     redirectPage({ url }) {
+      console.log('url:', url)
       if (!url) {
         return
       }
