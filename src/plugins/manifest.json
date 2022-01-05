@@ -1,11 +1,11 @@
 {
   "name": "Work Helper",
-  "description": "定制属于自己的备忘录!",
+  "description": "定制工作中常用工具!",
   "version": "1.0",
   "manifest_version": 2,
   "browser_action": {
     "default_icon": "assets/images/icon/128.png",
-    "default_title": "TODO 备忘录",
+    "default_title": "办公小助手",
     "default_popup": "popup.html"
   },
   "permissions": [
