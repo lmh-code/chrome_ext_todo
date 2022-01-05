@@ -230,7 +230,9 @@ export default {
         })
       }
 
-      this.$refs.theTodoListRef.setInputFocus()
+      this.$nextTick(() => {
+        this.$refs.theTodoListRef.setInputFocus()
+      })
     },
     /**
      * @description: 新增 | 编辑数据
