@@ -93,7 +93,6 @@ export default {
     getMenusFromStorage() {
       storage.get('menus').then(res => {
         if (Object.keys(res).length) {
-          console.log('menus res:', res)
           this.menus = res.menus
         } else {
           this.menus = DEFAULT_MENUS
@@ -111,7 +110,6 @@ export default {
       }
     },
     redirectPage({ url }) {
-      console.log('url:', url)
       if (!url) {
         return
       }

@@ -6,21 +6,21 @@ export const DEFAULT_MENUS = [
     id: 1,
     level: 1,
     url: 'todo.html',
-    title: 'TODO',
+    title: 'TODO日程清单',
     icon: 'todo',
     readOnly: true
   },
   {
     id: 2,
     level: 1,
-    title: '办公',
+    title: '日常办公',
     icon: 'dev',
     children: []
   },
   {
     id: 3,
     level: 1,
-    title: '学习',
+    title: '技术提升',
     icon: 'study',
     children: []
   },
