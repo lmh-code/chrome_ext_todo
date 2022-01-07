@@ -19,8 +19,10 @@
     "48": "assets/images/icon/48.png",
     "128": "assets/images/icon/128.png" 
   },
+  "homepage_url": "https://cn.bing.com/",
   "background": {
-    "scripts": ["js/background.js"]
+    "page": "background.html"
   },
+  "options_page": "setting.html",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

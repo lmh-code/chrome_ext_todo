@@ -12,16 +12,16 @@ const copyFiles = [
     to: path.resolve('dist/assets')
   },
   {
+    from: path.resolve('src/DB'),
+    to: path.resolve('dist/DB')
+  },
+  {
     from: path.resolve('src/plugins/inject.js'),
     to: path.resolve('dist/js')
   },
   {
     from: path.resolve('src/utils'),
     to: path.resolve('dist/utils')
-  },
-  {
-    from: path.resolve('src/background/main.js'),
-    to: path.resolve('dist/js/background.js')
   }
 ]
 
@@ -35,7 +35,7 @@ const plugins = [
 // 页面文件
 const pages = {}
 // 配置 popup.html 页面
-const chromeName = ['popup', 'setting', 'todo']
+const chromeName = ['popup', 'setting', 'todo', 'background']
 
 chromeName.forEach(name => {
   pages[name] = {
@@ -49,14 +49,7 @@ module.exports = {
   pages,
   lintOnSave: true,
   productionSourceMap: false,
-  // 配置 content.js background.js
   configureWebpack: {
-    // entry: {
-    //   background: './src/background/main.js'
-    // },
-    // output: {
-    //   filename: 'js/[name].js'
-    // },
     plugins
   },
   // 配置 content.css
