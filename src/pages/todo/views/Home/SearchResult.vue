@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import { CHROME_EXT_TODO } from '@/DB/constant'
+import { T_TODO_LIST } from '@/DB/constant'
 import IndexDB from '@/DB/index'
 import TheTodoList from './components/TheTodoList'
 let myTimeOut = null
@@ -85,7 +85,7 @@ export default {
     },
     async getDataByCondition(searchKey) {
       const result = await IndexDB.selectByCondition(
-        CHROME_EXT_TODO,
+        T_TODO_LIST,
         function(value) {
           return value.todo_info.includes(searchKey)
         }

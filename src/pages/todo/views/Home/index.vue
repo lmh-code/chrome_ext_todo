@@ -111,7 +111,8 @@
 <script>
 import Calendar from '@/components/Calendar'
 import TheTodoList from './components/TheTodoList'
-import { CHROME_EXT_TODO } from '@/DB/constant'
+import { T_TODO_LIST } from '@/DB/constant'
+import { REFRESH_BADGE } from '@/utils/constant'
 import IndexDB from '@/DB/index'
 export default {
   name: 'Todo',
@@ -190,7 +191,7 @@ export default {
      * @description: 通过制定的key获取当前日的日程
      */
     async getTodoListByKey(todoKey) {
-      const result = await IndexDB.selectByIndex(CHROME_EXT_TODO, 'todo_key', todoKey)
+      const result = await IndexDB.selectByIndex(T_TODO_LIST, 'todo_key', todoKey)
 
       if (+result.code === 200) {
         const data = result?.data || []
@@ -204,7 +205,7 @@ export default {
     async getDataByCondition(monthDays) {
       const todoKeys = monthDays.map(item => `${item.year}-${item.month}-${item.day}`)
       const result = await IndexDB.selectByCondition(
-        CHROME_EXT_TODO,
+        T_TODO_LIST,
         function(value) {
           return todoKeys.includes(value.todo_key)
         }
@@ -248,7 +249,7 @@ export default {
       }
     },
     async doAddHandle(item) {
-      const result = await IndexDB.insert(CHROME_EXT_TODO, {
+      const result = await IndexDB.insert(T_TODO_LIST, {
         create_time: new Date().getTime(),
         update_time: item.update_time,
         todo_key: item.todo_key,
@@ -259,13 +260,17 @@ export default {
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
 
+        this.sendMessage({
+          msg: '新增成功'
+        })
+
         if (!this.hasScheduleDays.includes(item.todo_key)) {
           this.hasScheduleDays.push(item.todo_key)
         }
       }
     },
     async doEditHandle(item) {
-      const result = await IndexDB.updateByPrimaryKey(CHROME_EXT_TODO, {
+      const result = await IndexDB.updateByPrimaryKey(T_TODO_LIST, {
         id: item.id,
         create_time: item.create_time,
         update_time: new Date().getTime(),
@@ -276,6 +281,10 @@ export default {
 
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
+
+        this.sendMessage({
+          msg: '编辑成功'
+        })
       }
     },
     /**
@@ -311,17 +320,28 @@ export default {
         console.warn('库中暂无日程信息，不可点击删除！')
         return
       }
-      const result = await IndexDB.deleteByPrimaryKey(CHROME_EXT_TODO, item.id)
+      const result = await IndexDB.deleteByPrimaryKey(T_TODO_LIST, item.id)
       if (result.code === 200) {
         this.getTodoListByKey(item.todo_key)
+        this.sendMessage({
+          msg: '删除成功'
+        })
       }
     },
-
     /**
      * @description: 点击跳转至搜索页面
      */
     linkSearchPage() {
       this.$router.push('/index/result')
+    },
+    sendMessage(msgInfo) {
+      // 发送消息
+      chrome.runtime.sendMessage({
+        key: REFRESH_BADGE,
+        ...msgInfo
+      }, function(response) {
+        console.log(`${REFRESH_BADGE}: ${response}`)
+      })
     }
   }
 }

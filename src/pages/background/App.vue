@@ -4,11 +4,22 @@
 
 <script>
 import IndexDB from '@/DB/index'
+import { T_TODO_LIST } from '@/DB/constant'
+import { REFRESH_BADGE } from '@/utils/constant'
 export default {
   name: 'Background',
   mounted() {
+    const _this = this
     this.initBaiduTranslate()
     this.initBadge()
+
+    // 全局接收消息
+    chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+      if (request.key === REFRESH_BADGE) {
+        _this.initBadge()
+        sendResponse(request.msg)
+      }
+    })
   },
   methods: {
     initBaiduTranslate() {
@@ -31,12 +42,15 @@ export default {
       const year = new Date().getFullYear()
       const month = new Date().getMonth() + 1
       const day = new Date().getDate()
-      IndexDB.selectByIndex('chrome_ext_todo', 'todo_key', `${year}-${month}-${day}`).then(res => {
+      IndexDB.selectByIndex(T_TODO_LIST, 'todo_key', `${year}-${month}-${day}`).then(res => {
         const data = res?.data || []
+        const todoList = data.filter(item => !item.complete)
         // 设置今日待办事项
-        if (data.length) {
-          chrome.browserAction.setBadgeText({ text: `${data.length}` })
+        if (todoList.length) {
+          chrome.browserAction.setBadgeText({ text: `${todoList.length}` })
           chrome.browserAction.setBadgeBackgroundColor({ color: '#5587F0' })
+        } else {
+          chrome.browserAction.setBadgeText({ text: '' })
         }
       })
     }

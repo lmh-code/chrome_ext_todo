@@ -32,3 +32,5 @@ export const DEFAULT_MENUS = [
     children: []
   }
 ]
+
+export const REFRESH_BADGE = 'refresh_badge' // 消息通信时使用，todo日程管理 增、删、改、查

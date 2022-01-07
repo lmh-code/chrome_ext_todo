@@ -1,5 +1,5 @@
 import { isArray } from '@/utils/validate'
-import { CHROME_EXT_TODO } from './constant'
+import { T_TODO_LIST } from './constant'
 class IndexDB {
   constructor(dbName, version = '1') {
     this.DB = null
@@ -23,10 +23,10 @@ class IndexDB {
     }
     request.onupgradeneeded = function(event) {
       this.DB = event.target.result
-      // 创建数据库中的表 chrome_ext_todo
-      if (!this.DB.objectStoreNames.contains(CHROME_EXT_TODO)) {
+      // 创建数据库中的表 T_TODO_LIST
+      if (!this.DB.objectStoreNames.contains(T_TODO_LIST)) {
         const objectStore = this.DB.createObjectStore(
-          CHROME_EXT_TODO,
+          T_TODO_LIST,
           {
             keyPath: 'id',
             autoIncrement: true
