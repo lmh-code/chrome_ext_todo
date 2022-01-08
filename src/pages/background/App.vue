@@ -15,7 +15,7 @@ export default {
 
     // 全局接收消息
     chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-      if (request.key === REFRESH_BADGE) {
+      if (request.action === REFRESH_BADGE) {
         _this.initBadge()
         sendResponse(request.msg)
       }

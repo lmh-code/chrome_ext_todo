@@ -337,7 +337,7 @@ export default {
     sendMessage(msgInfo) {
       // 发送消息
       chrome.runtime.sendMessage({
-        key: REFRESH_BADGE,
+        action: REFRESH_BADGE,
         ...msgInfo
       }, function(response) {
         console.log(`${REFRESH_BADGE}: ${response}`)

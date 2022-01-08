@@ -12,7 +12,13 @@
     "tabs",
     "contextMenus",
     "storage",
-    "https://secure.flickr.com/"
+    "cookies",
+    "notifications",
+    "downloads",
+    "https://secure.flickr.com/",
+    "*://*.longfor.uat/",
+    "*://*.longfor.sit/",
+    "http://localhost/"
   ],
   "icons": {
     "16": "assets/images/icon/16.png",

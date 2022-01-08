@@ -44,10 +44,6 @@ export default {
     title: {
       type: String,
       default: ''
-    },
-    nextIcon: {
-      type: String,
-      default: ''
     }
   },
   data() {
