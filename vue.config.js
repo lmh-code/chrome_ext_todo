@@ -35,7 +35,7 @@ const plugins = [
 // 页面文件
 const pages = {}
 // 配置 popup.html 页面
-const chromeName = ['popup', 'setting', 'todo', 'background']
+const chromeName = ['popup', 'setting', 'todo', 'background', 'easyForm']
 
 chromeName.forEach(name => {
   pages[name] = {

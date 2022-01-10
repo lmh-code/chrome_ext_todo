@@ -160,7 +160,7 @@ export default {
   justify-content: space-between;
 }
 .cp-container {
-  border-bottom: 1px dashed $-color-sub-grey;
+  border-bottom: 2px solid $-color-sub-grey;
   padding: 10px;
   box-sizing: border-box;
   .m-table {

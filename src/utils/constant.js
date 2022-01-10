@@ -13,19 +13,27 @@ export const DEFAULT_MENUS = [
   {
     id: 2,
     level: 1,
+    url: 'easyForm.html',
+    title: 'Easy Form',
+    icon: 'mop_easy',
+    readOnly: true
+  },
+  {
+    id: 3,
+    level: 1,
     title: '日常办公',
     icon: 'dev',
     children: []
   },
   {
-    id: 3,
+    id: 4,
     level: 1,
     title: '技术提升',
     icon: 'study',
     children: []
   },
   {
-    id: 4,
+    id: 5,
     level: 1,
     title: '其他',
     icon: 'others',
