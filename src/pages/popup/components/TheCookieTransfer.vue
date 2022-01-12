@@ -102,6 +102,9 @@ export default {
       } else if (this.sitHas) {
         cookie = { ...this.sitInfo }
       }
+      if (!Object.keys(cookie).length) {
+        return
+      }
 
       delete cookie.hostOnly
       delete cookie.session
@@ -139,9 +142,11 @@ export default {
         domain: 'localhost'
       }, (cookies) => {
         const cookieVal = cookies[0]?.value || ''
-        if (cookieVal && cookieVal === this.uatInfo.value) {
+        const uatCookieVal = this.uatInfo?.value || ''
+        const sitCookieVal = this.sitInfo?.value || ''
+        if (cookieVal && uatCookieVal && cookieVal === uatCookieVal) {
           this.copyUatSuccess = true
-        } else if (cookieVal && cookieVal === this.sitInfo.value) {
+        } else if (cookieVal && sitCookieVal && cookieVal === sitCookieVal) {
           this.copySitSuccess = true
         } else {
           this.copyUatSuccess = false
