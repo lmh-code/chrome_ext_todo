@@ -16,8 +16,10 @@
     "notifications",
     "downloads",
     "https://secure.flickr.com/",
-    "*://*.longfor.uat/",
     "*://*.longfor.sit/",
+    "*://*.longfor.uat/",
+    "*://*.longfor.net/",
+    "*://*.longfor.com/",
     "http://localhost/"
   ],
   "icons": {

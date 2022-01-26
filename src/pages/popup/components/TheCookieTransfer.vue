@@ -6,45 +6,25 @@
       title="Cookie Transfer"
     />
     <div class="m-table">
-
       <div class="flex th">
-        <div class="td left">sit</div>
-        <div class="td">uat</div>
+        <div v-for="item of envList" :key="item" class="td">.{{ item }}</div>
       </div>
       <div class="flex tr">
-        <div class="td left">
-          <img v-if="sitHas" src="~@/assets/images/existence.png" height="20">
-          <img v-else src="~@/assets/images/non-existence.png" height="20">
-        </div>
-        <div class="td">
-          <img v-if="uatHas" src="~@/assets/images/existence.png" height="20">
+        <div v-for="item of envList" :key="item" class="td">
+          <img v-if="envMap[item].hasCookie" src="~@/assets/images/existence.png" height="20">
           <img v-else src="~@/assets/images/non-existence.png" height="20">
         </div>
       </div>
       <div class="flex tr">
-        <div class="td left btn">
-          <span @click="copyCookieHandle('sit')">
+        <div v-for="item of envList" :key="item" class="td btn">
+          <span @click="copyCookieHandle(item)">
             <svg-icon
               icon-class="copy"
               class-name="copy-icon"
             />
             复制
             <svg-icon
-              v-if="copySitSuccess"
-              icon-class="success"
-              class-name="copy-icon"
-            />
-          </span>
-        </div>
-        <div class="td btn">
-          <span @click="copyCookieHandle('uat')">
-            <svg-icon
-              icon-class="copy"
-              class-name="copy-icon"
-            />
-            复制
-            <svg-icon
-              v-if="copyUatSuccess"
+              v-if="envMap[item].copySuccess"
               icon-class="success"
               class-name="copy-icon"
             />
@@ -65,6 +45,33 @@ export default {
   data() {
     return {
       cookies: [],
+      envList: ['sit', 'uat', 'net', 'com'],
+      envMap: {
+        sit: {
+          key: 'sit',
+          hasCookie: false,
+          copySuccess: false,
+          cookieInfo: {}
+        },
+        uat: {
+          key: 'uat',
+          hasCookie: false,
+          copySuccess: false,
+          cookieInfo: {}
+        },
+        net: {
+          key: 'net',
+          hasCookie: false,
+          copySuccess: false,
+          cookieInfo: {}
+        },
+        com: {
+          key: 'com',
+          hasCookie: false,
+          copySuccess: false,
+          cookieInfo: {}
+        }
+      },
 
       sitHas: false,
       sitInfo: {},
@@ -85,22 +92,22 @@ export default {
       }, (cookies) => {
         console.log('获取到的cookies:', cookies)
         this.cookies = cookies
-
-        this.sitInfo = cookies.find(item => item.domain === '.longfor.sit')
-        this.sitHas = !!(this.sitInfo && this.sitInfo.value)
-
-        this.uatInfo = cookies.find(item => item.domain === '.longfor.uat')
-        this.uatHas = !!(this.uatInfo && this.uatInfo.value)
-
+        for (const item of this.envList) {
+          const cookieInfo = cookies.find(cookie => cookie.domain === `.longfor.${item}`)
+          this.envMap[item].hasCookie = !!(cookieInfo && cookieInfo.value)
+          this.envMap[item].cookieInfo = cookieInfo
+        }
         this.checkCookie()
       })
     },
+    /**
+     * @description: 给localhost设置cookie
+     * @param {*} type 环境
+     */
     copyCookieHandle(type) {
       let cookie = {}
-      if (type === 'uat' && this.uatHas) {
-        cookie = { ...this.uatInfo }
-      } else if (this.sitHas) {
-        cookie = { ...this.sitInfo }
+      if (this.envMap[type].hasCookie && this.envMap[type].cookieInfo) {
+        cookie = { ...this.envMap[type].cookieInfo }
       }
       if (!Object.keys(cookie).length) {
         return
@@ -136,21 +143,22 @@ export default {
         })
       })
     },
+    /**
+     * @description: 检测是否已经复制到本地
+     */
     checkCookie() {
       chrome.cookies.getAll({
         name: 'CASTGC',
         domain: 'localhost'
       }, (cookies) => {
         const cookieVal = cookies[0]?.value || ''
-        const uatCookieVal = this.uatInfo?.value || ''
-        const sitCookieVal = this.sitInfo?.value || ''
-        if (cookieVal && uatCookieVal && cookieVal === uatCookieVal) {
-          this.copyUatSuccess = true
-        } else if (cookieVal && sitCookieVal && cookieVal === sitCookieVal) {
-          this.copySitSuccess = true
-        } else {
-          this.copyUatSuccess = false
-          this.copySitSuccess = false
+        for (const item of this.envList) {
+          const envCookieVal = this.envMap[item].cookieInfo?.value
+          if (envCookieVal === cookieVal) {
+            this.envMap[item].copySuccess = true
+          } else {
+            this.envMap[item].copySuccess = false
+          }
         }
       })
     }
@@ -175,8 +183,9 @@ export default {
       padding: 6px 0;
       box-sizing: border-box;
       text-align: center;
-      &.left {
-        border-right: 1px solid $-color-sub-grey;
+      border-right: 1px solid $-color-sub-grey;
+      &:last-child {
+        border-right-width: 0;
       }
     }
   }
