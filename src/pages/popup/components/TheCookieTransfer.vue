@@ -71,15 +71,7 @@ export default {
           copySuccess: false,
           cookieInfo: {}
         }
-      },
-
-      sitHas: false,
-      sitInfo: {},
-      copySitSuccess: false,
-
-      uatHas: false,
-      uatInfo: {},
-      copyUatSuccess: false
+      }
     }
   },
   mounted() {
