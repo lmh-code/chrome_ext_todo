@@ -85,7 +85,7 @@ export default {
 <style lang="scss" scoped>
   .menus-container {
     overflow-y: auto;
-    padding: 10px;
+    padding: 10px 20px;
     box-sizing: border-box;
     .sub-menu-wrap {
       padding-left: 16px;

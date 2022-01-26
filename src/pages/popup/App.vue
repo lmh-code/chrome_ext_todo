@@ -5,6 +5,7 @@
     </header>
     <div class="container">
       <the-cookie-transfer />
+      <the-qr-code />
       <the-menu-list />
     </div>
     <footer class="footer-wrap">
@@ -25,10 +26,12 @@
 <script>
 import { VERSION } from '@/utils/constant'
 import TheCookieTransfer from './components/TheCookieTransfer.vue'
+import TheQrCode from './components/TheQrCode.vue'
 import TheMenuList from './components/TheMenuList.vue'
 export default {
   name: 'Popup',
   components: {
+    TheQrCode,
     TheCookieTransfer,
     TheMenuList
   },
@@ -80,7 +83,8 @@ export default {
     }
 
     .container {
-      max-height: 360px;
+      max-height: 460px;
+      overflow-y: auto;
     }
 
     .footer-wrap {

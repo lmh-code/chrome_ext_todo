@@ -2,8 +2,8 @@
   <div class="cp-container">
     <menu-item
       icon="transfer"
-      next-icon="down"
       title="Cookie Transfer"
+      :readonly="true"
     />
     <div class="m-table">
       <div class="flex th">
@@ -166,7 +166,7 @@ export default {
 }
 .cp-container {
   border-bottom: 2px solid $-color-sub-grey;
-  padding: 10px;
+  padding: 10px 20px;
   box-sizing: border-box;
   .m-table {
     border: 1px solid $-color-sub-grey;

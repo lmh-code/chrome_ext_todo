@@ -1,5 +1,5 @@
 <template>
-  <div class="menu-item">
+  <div class="menu-item " :class="readonly ? 'readonly' : ''">
     <svg-icon
       v-if="icon"
       :icon-class="icon"
@@ -32,6 +32,10 @@ export default {
     nextIcon: {
       type: String,
       default: ''
+    },
+    readonly: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -60,6 +64,12 @@ export default {
     }
     &:hover {
       color: $-color-hover;
+    }
+    &.readonly {
+      cursor: default;
+    }
+    &.readonly:hover {
+      color: $-color-black;
     }
   }
 </style>
